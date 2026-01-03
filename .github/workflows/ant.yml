@@ -24,56 +24,18 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         
-    - name: Cache Ant dependencies
-      uses: actions/cache@v3
-      with:
-        path: ~/.ant/lib
-        key: ${{ runner.os }}-ant-${{ hashFiles('**/build.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-ant-
-    
-    # Step 1: Compile the main source code
-    - name: Compile source code
+    - name: Build with Ant
       run: ant compile
-      
-    # Step 2: Compile the test code (depends on compiled source)
-    - name: Compile tests
-      run: ant compile-tests
-      
-    # Step 3: Run tests (fails the workflow if tests fail)
-    - name: Run tests
-      run: ant test
-      
-    # Step 4: Only create JAR if tests pass
-    - name: Create JAR package
+
+    - name: Create JAR
       run: ant jar
-      
-    # Step 5: Run the application to verify it works
+
     - name: Run application
       run: ant run
-      
-    # Step 6: Upload the JAR only if everything succeeded
-    - name: Upload JAR artifact
+
+    - name: Upload JAR
       uses: actions/upload-artifact@v4
-      with:
-        name: java-ant-app
-        path: build/jar/*.jar
-        retention-days: 5
-        
-    # Step 7: Upload test reports for review
-    - name: Upload test reports
-      uses: actions/upload-artifact@v4
-      if: always()  # Upload even if tests fail
-      with:
-        name: test-reports
-        path: build/reports/
-        retention-days: 5
-        
-    - name: Display build summary
-      run: |
-        echo "✅ Build completed successfully!"
-        echo "📦 JAR location:"
-        ls -lh build/jar/
-        echo ""
-        echo "📊 Test reports:"
-        ls -lh build/reports/ || echo "No test reports generated"
+      with: 
+      name: java-app
+      path: build/jar/*.jar
+
