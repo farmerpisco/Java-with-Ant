@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="JavaAntDemo" default="all" basedir=".">
+    <description>
+        A simple Java project with Ant for GitHub Actions practice
+    </description>
+
+    <!-- Properties -->
+    <property name="src.dir" value="src"/>
+    <property name="build.dir" value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="jar.dir" value="${build.dir}/jar"/>
+    <property name="test.dir" value="test"/>
+    <property name="test.classes.dir" value="${build.dir}/test-classes"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="reports.dir" value="${build.dir}/reports"/>
+    <property name="main.class" value="com.example.App"/>
+
+    <!-- Classpath -->
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar" erroronmissingdir="false"/>
+    </path>
+
+    <path id="test.classpath">
+        <path refid="classpath"/>
+        <pathelement location="${classes.dir}"/>
+        <pathelement location="${test.classes.dir}"/>
+    </path>
+
+    <!-- Clean target -->
+    <target name="clean" description="Remove all generated files">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <!-- Init target -->
+    <target name="init" description="Create build directories">
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${jar.dir}"/>
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${reports.dir}"/>
+    </target>
+
+    <!-- Compile target -->
+    <target name="compile" depends="init" description="Compile Java sources">
+        <javac srcdir="${src.dir}" 
+               destdir="${classes.dir}" 
+               includeantruntime="false"
+               debug="true"
+               source="1.8"
+               target="1.8">
+            <classpath refid="classpath"/>
+        </javac>
+        <echo message="Compilation complete!"/>
+    </target>
+
+    <!-- Compile tests -->
+    <target name="compile-tests" depends="compile" description="Compile test sources">
+        <javac srcdir="${test.dir}" 
+               destdir="${test.classes.dir}" 
+               includeantruntime="false"
+               debug="true"
+               source="1.8"
+               target="1.8">
+            <classpath refid="test.classpath"/>
+        </javac>
+    </target>
+
+    <!-- Run tests -->
+    <target name="test" depends="compile-tests" description="Run unit tests">
+        <junit printsummary="yes" haltonfailure="no" fork="true">
+            <classpath refid="test.classpath"/>
+            <formatter type="plain"/>
+            <formatter type="xml"/>
+            <batchtest todir="${reports.dir}">
+                <fileset dir="${test.classes.dir}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+            </batchtest>
+        </junit>
+    </target>
+
+    <!-- Create JAR -->
+    <target name="jar" depends="compile" description="Create JAR file">
+        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main.class}"/>
+            </manifest>
+        </jar>
+        <echo message="JAR created: ${jar.dir}/${ant.project.name}.jar"/>
+    </target>
+
+    <!-- Run application -->
+    <target name="run" depends="jar" description="Run the application">
+        <java jar="${jar.dir}/${ant.project.name}.jar" fork="true"/>
+    </target>
+
+    <!-- Build all -->
+    <target name="all" depends="clean,compile,jar" description="Clean, compile and package"/>
+
+</project>
